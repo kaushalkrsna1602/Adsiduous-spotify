@@ -1,5 +1,4 @@
 'use client'
-
 import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import MusicPlayer from '../components/MusicPlayer'
@@ -48,10 +47,10 @@ export default function HomePage() {
           setPlaylists([]);
         }
       })
-      // .catch(err => {
-      //   console.error('Failed to fetch playlists', err);
-      //   setPlaylists([]);
-      // });
+      .catch(err => {
+        console.error('Failed to fetch playlists', err);
+        setPlaylists([]);
+      });
   }, [session?.accessToken]);
 
 
@@ -84,7 +83,7 @@ export default function HomePage() {
       }))
     );
   } catch (error) {
-    setErrorMessage('Failed to fetch tracks.');
+    setErrorMessage('Failed to fetch tracks.',);
   }
 };
 
