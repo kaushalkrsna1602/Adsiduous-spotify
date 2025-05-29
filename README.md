@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Adsiduous Spotify Clone
 
-## Getting Started
+A simplified Spotify homepage clone built with Next.js (App Router), TypeScript, NextAuth.js (Spotify OAuth), and Tailwind CSS.  
+Fetches and displays user playlists from the Spotify API with a music player for track previews.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Live Demo
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+🔗 [https://adsiduous-spotify.vercel.app/](https://adsiduous-spotify.vercel.app/)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Spotify OAuth authentication via NextAuth.js
+- Display user's Spotify playlists
+- Show tracks of selected playlist
+- Play 30-second preview of selected track
+- Responsive UI with Tailwind CSS
+- Error handling and loading states
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js 15
+- TypeScript
+- NextAuth.js
+- Spotify Web API
+- Tailwind CSS
+- React Hooks (useState, useEffect)
+- Vercel (for deployment)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Setup and Installation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 1. Create Spotify Developer Application
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications).
+- Create a new app and copy your **Client ID** and **Client Secret**.
+- Add the following Redirect URI for your development environment and production:
+
+http://localhost:3000/api/auth/callback/spotify
+
+
+### 2. Environment Variables
+
+Create a `.env.local` file in the root of your project with:
+
+```env
+SPOTIFY_CLIENT_ID=your_spotify_client_id
+SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_random_secret
+
+
+npm install next react react-dom next-auth tailwindcss
+npm install -D typescript @types/react @types/node
+
+  src/
+├── app/
+│   ├── api/
+│   │   └── auth/
+│   │       └── [...nextauth]/route.ts    # NextAuth route handler
+│   ├── page.tsx                         # Main home page
+│
+├── components/
+│   ├── Header.tsx
+│   ├── AuthButtons.tsx
+│   ├── MusicPlayer.tsx
+│   ├── TrackList.tsx
+│   └── PlaylistCard.tsx
+│
+.env.local
+next.config.js
+package.json
+
+
+Common Issues
+Invalid redirect URI error: Make sure the redirect URI is added exactly in Spotify Dashboard and matches deployed URL.
+
+TypeScript errors for accessToken: Extend Session type or use type assertion carefully.
+
+
+## 🧪 Test Login (Development Mode)
+
+As the app is currently in **Spotify Developer Mode**, only approved users can test it.
+
+### ✅ Use this test Spotify account:
+
+- **Email**: `natojes709@pricegh.com`
+- **Password**: `Spotify@123`
+

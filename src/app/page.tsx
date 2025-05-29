@@ -36,6 +36,7 @@ export default function HomePage() {
   useEffect(() => {
     if (!session?.accessToken) return;
 
+    // Fetch user's playlists from Spotify API
     fetch('https://api.spotify.com/v1/me/playlists', {
       headers: {
         Authorization: `Bearer ${session.accessToken}`,
@@ -56,6 +57,7 @@ export default function HomePage() {
   }, [session?.accessToken]);
 
 
+  // Function to handle playlist click and fetch tracks
   const handlePlaylistClick = async (playlistId: string) => {
   setErrorMessage(null);
   setCurrentTrack(null);
@@ -63,6 +65,7 @@ export default function HomePage() {
   if (!session?.accessToken) return;
 
   try {
+    // Fetch tracks for the selected playlist
     const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
       headers: {
         Authorization: `Bearer ${session.accessToken}`,
@@ -76,6 +79,7 @@ export default function HomePage() {
       return;
     }
 
+    // Map the fetched tracks to our Track type
     setSelectedPlaylistTracks(
       data.items.map((item: any) => ({
         id: item.track.id,
@@ -90,6 +94,7 @@ export default function HomePage() {
 };
 
 
+// Function to handle track click and set current track for playback
   const handleTrackClick = (track: Track) => {
     if (!track.preview_url) {
       setErrorMessage('No preview available for this track.')

@@ -13,6 +13,8 @@ const scopes = [
   "user-read-currently-playing",
 ].join(",");
 
+
+
 const authOptions: NextAuthOptions = {
   providers: [
     SpotifyProvider({
@@ -31,6 +33,7 @@ const authOptions: NextAuthOptions = {
       }
       return token;
     },
+    // This callback is called whenever a session is checked
     async session({ session, token }) {
       (session as any).accessToken = token.accessToken;
       return session;
@@ -38,6 +41,6 @@ const authOptions: NextAuthOptions = {
   },
 };
 
-// ✅ EXPORT ONLY GET and POST
+
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
