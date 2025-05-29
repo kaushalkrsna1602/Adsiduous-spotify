@@ -1,103 +1,172 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useSession } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import MusicPlayer from '../components/MusicPlayer'
+import Header from '@/components/Header'
+import AuthButtons from '@/components/AuthButtons'
+import TrackList from '@/components/TrackList'
+
+type Playlist = {
+  id: string
+  name: string
+  images: { url: string }[]
+}
+
+type Track = {
+  id: string
+  name: string
+  artists: { name: string }[]
+  preview_url: string | null
+}
+
+export default function HomePage() {
+  const { data: session, status } = useSession()
+
+  const [playlists, setPlaylists] = useState<Playlist[]>([])
+  const [selectedPlaylistTracks, setSelectedPlaylistTracks] = useState<Track[]>([])
+  const [currentTrack, setCurrentTrack] = useState<{
+    name: string
+    artist: string
+    previewUrl: string | null
+  } | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!session?.accessToken) return;
+
+    fetch('https://api.spotify.com/v1/me/playlists', {
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data?.items) {
+          setPlaylists(data.items);
+        } else {
+          setPlaylists([]);
+        }
+      })
+      // .catch(err => {
+      //   console.error('Failed to fetch playlists', err);
+      //   setPlaylists([]);
+      // });
+  }, [session?.accessToken]);
+
+
+  const handlePlaylistClick = async (playlistId: string) => {
+  setErrorMessage(null);
+  setCurrentTrack(null);
+
+  if (!session?.accessToken) return;
+
+  try {
+    const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+    });
+    const data = await res.json();
+
+    if (!data.items) {
+      setSelectedPlaylistTracks([]);
+      setErrorMessage('No tracks found for this playlist.');
+      return;
+    }
+
+    setSelectedPlaylistTracks(
+      data.items.map((item: any) => ({
+        id: item.track.id,
+        name: item.track.name,
+        artists: item.track.artists,
+        preview_url: item.track.preview_url,
+      }))
+    );
+  } catch (error) {
+    setErrorMessage('Failed to fetch tracks.');
+  }
+};
+
+
+  const handleTrackClick = (track: Track) => {
+    if (!track.preview_url) {
+      setErrorMessage('No preview available for this track.')
+      return
+    }
+    setErrorMessage(null)
+    setCurrentTrack({
+      name: track.name,
+      artist: track.artists.map((a) => a.name).join(', '),
+      previewUrl: track.preview_url,
+    })
+  }
+
+  if (status === 'loading') {
+    // Show loading spinner or text while session is loading
+    return (
+      <div className="flex items-center justify-center min-h-screen text-white bg-zinc-900">
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated') {
+    // Show login button page if NOT logged in
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 text-white bg-gradient-to-b from-black via-zinc-900 to-zinc-800 px-4">
+        <AuthButtons />
+        <p className="text-lg font-medium">Please login to Spotify to see your playlists.</p>
+      </div>
+    )
+  }
+
+  // If logged in (status === 'authenticated'), show home page
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <>
+      <Header />
+      <main className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-zinc-800 p-6 max-w-7xl mx-auto">
+        <h1 className="text-4xl font-bold text-green-500 mb-8 select-none tracking-wide">
+          Your Spotify Playlists
+        </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Playlist Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
+          {playlists.length === 0 && (
+            <p className="text-white col-span-full text-center">No playlists found.</p>
+          )}
+          {playlists.map((playlist) => (
+            <div
+              key={playlist.id}
+              onClick={() => handlePlaylistClick(playlist.id)}
+              className="cursor-pointer bg-zinc-800 p-4 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-300 flex flex-col items-center"
+              title={playlist.name}
+            >
+              <img
+                src={playlist.images[0]?.url}
+                alt={playlist.name}
+                className="w-full rounded-lg mb-3 aspect-square object-cover"
+                loading="lazy"
+              />
+              <h3 className="text-white font-semibold truncate text-center text-lg">{playlist.name}</h3>
+            </div>
+          ))}
+        </div>
+
+
+        {/* Tracks List */}
+        <TrackList
+          tracks={selectedPlaylistTracks}
+          currentTrack={currentTrack}
+          onTrackClick={handleTrackClick}
+          errorMessage={errorMessage}
+        />
+
+        {/* Music Player */}
+        <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t border-green-600 shadow-lg">
+          <MusicPlayer track={currentTrack} />
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    </>
+  )
 }
