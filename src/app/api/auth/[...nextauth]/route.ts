@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import NextAuth from 'next-auth'
 import SpotifyProvider from 'next-auth/providers/spotify'
 import { NextAuthOptions } from 'next-auth'
+import { NextRequest, NextResponse } from 'next/server'
 
 const scopes = [
   'user-read-email',
@@ -34,11 +33,14 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
+      // You can cast session as needed
       (session as any).accessToken = token.accessToken
       return session
     },
   },
 }
 
+// App Router syntax: create handler for both GET and POST
 const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }
+export const GET = handler
+export const POST = handler
